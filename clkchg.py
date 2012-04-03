@@ -80,22 +80,25 @@ def findNode(moduleName, nodeToFind):
     pat1 = r'^\s*(wire|input|output|inout|reg|module)\s'
     pat2 = '[\s+\(]+(' + nodeToFind + ')[\s+\)]+'
     pat3 = '[\w\d_-]+\s+([\w\d_-]+)\s+'
-    pat4 = '\.([\w\d_-]+)[\s\(]+' + nodeToFind
+    pat4 = '\.([\w\d_-]+)[\s\(]+' + nodeToFind +'\s*\)'
+    # this section needs discussion
+
+    outputPorts = ['O','Q','QB']    
+
     for eachLine in module:
         if re.search(pat1, eachLine) is None:
             if re.search(pat2, eachLine) is not None:
                 #print 'in module this instance line is:\n %s' %eachLine
-                result = '%s/%s' %(re.findall(pat3, eachLine)[0],re.findall(pat4, eachLine)[0])
+                if re.findall(pat4, eachLine)[0] in outputPorts:
+                    return '%s/%s' %(re.findall(pat3, eachLine)[0],re.findall(pat4, eachLine)[0])
                 #print result
-                return result
-                
-  
+    return 'NOTFOUND:%s/%s' %(moduleName, nodeToFind)
+            
     
-
-
-#def testmode():
-    #readSDC('first.aprtop.sdc','first.aprtop.sdc.check')
-
+    
+    
+    # end of this section needs discussion    
+                
 def modifyPath(aPath):
     path = aPath.split('/')
     path[-1] = findNode(path[-2], path[-1])
@@ -143,10 +146,11 @@ def main(sdcFileName, verilogFileName):
 
 
 if __name__ == '__main__' :
+    version = 'v0.0.1'
     print '*********************'
-    print '**clkchg v0.0.0******'
+    print '**clkchg ver:%s' %version
     print '**Author:Wangke******'
-    print '**Date:2012/03/29****'
+    print '**Date:2012/04/03****'
     print '*********************'
     if len(sys.argv) > 2:
         main(sys.argv[1],sys.argv[2])
