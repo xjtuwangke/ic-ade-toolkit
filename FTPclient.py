@@ -127,6 +127,7 @@ class WKExpFTP(WKFTPConnection):
             self.uploadTXT('Dialog.txt')
 
     def updateDict(self,oneDict):
+        print 'updateDict() is updating %s' %oneDict
         if self.connected == True:
             self.changePWD('\\')
             try:
@@ -136,17 +137,18 @@ class WKExpFTP(WKFTPConnection):
             self.changePWD(oneDict)
             if os.path.exists(oneDict):
                 os.chdir(oneDict)
-                if (oneDict + '.txt.temp' in self.ftp.nlst()) or (oneDict + '.jpg.temp' in self.ftp.nlst()):
-                    logFile.write('%s still uploading, skip\n' %oneDict)
-                    self.rename(oneDict + '.txt.temp', oneDict + '.txt')
-                    self.rename(oneDict + '.jpg.temp', oneDict + '.jpg')
-                else:
-                    os.system('copy ' + oneDict + '.txt ' + oneDict + '.txt.temp')
-                    os.system('copy ' + oneDict + '.jpg ' + oneDict + '.jpg.temp')
-                    self.uploadTXT(oneDict + '.txt.temp')
-                    self.uploadBIN(oneDict + '.jpg.temp')
-                    self.rename(oneDict + '.txt.temp', oneDict + '.txt')
-                    self.rename(oneDict + '.jpg.temp', oneDict + '.jpg')      
+                print 'now in os.chdir()'
+                ##if (oneDict + '.txt.temp' in self.ftp.nlst()) or (oneDict + '.jpg.temp' in self.ftp.nlst()):
+                ##    logFile.write('%s still uploading, skip\n' %oneDict)
+                ##self.rename(oneDict + '.txt.temp', oneDict + '.txt')
+                ##self.rename(oneDict + '.jpg.temp', oneDict + '.jpg')
+                ##else:
+                os.system('copy ' + oneDict + '.txt ' + oneDict + '.txt.temp')
+                os.system('copy ' + oneDict + '.jpg ' + oneDict + '.jpg.temp')
+                self.uploadTXT(oneDict + '.txt.temp')
+                self.uploadBIN(oneDict + '.jpg.temp')
+                self.rename(oneDict + '.txt.temp', oneDict + '.txt')
+                self.rename(oneDict + '.jpg.temp', oneDict + '.jpg')
             else:
                 print "local path %s does not exist" %oneDict
                 logFile.write("local path %s does not exist\n" %oneDict)
