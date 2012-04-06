@@ -27,12 +27,14 @@ class WKFTPConnection(object):
             self.ftp.login(self.loginName,self.loginPWD)
         except ftplib.error_perm:
             print 'ERROR: cannot login'
+            logFile.write('ERROR: cannot login to host=%s,user=%s,password=%s' %(self.host,self.loginName,self.loginPWD))
             self.ftp.quit()
             return
         print '***logged in'
         self.connected = True
 
     def changePWD(self,DIRN):
+        logFile.write('changePWD(%s)\n' %DIRN)
         if self.connected == True:
             try:
                 self.ftp.cwd(DIRN)
@@ -47,6 +49,7 @@ class WKFTPConnection(object):
             return
 
     def uploadTXT(self,fileName):
+        logFile.write('uploadTXT(%s)\n' %fileName)
         if self.connected == True:
             try:
                 file_handler = open(fileName,'r')
@@ -72,6 +75,7 @@ class WKFTPConnection(object):
             logFile.write('cannot upload file , not logged in\n')
 
     def uploadBIN(self, fileName):
+        logFile.write('uploadBIN(%s)\n' %fileName)
         bufSize = 32768
         if self.connected == True:
             try:
@@ -98,6 +102,7 @@ class WKFTPConnection(object):
             logFile.write('cannot upload file , not logged in\n')
 
     def logout(self):
+        logFile.write('logout\n')
         if self.connected == True:
             self.ftp.quit()
             self.connected = False
@@ -106,6 +111,7 @@ class WKFTPConnection(object):
         return
 
     def rename(self, oldName, newName):
+        logFile.write('rename(%s,%s)\n' %(oldName,newName))
         if self.connected == True:
             print "trying to rename\n"
             try:
@@ -144,12 +150,12 @@ class WKExpFTP(WKFTPConnection):
                 ##self.rename(oneDict + '.txt.temp', oneDict + '.txt')
                 ##self.rename(oneDict + '.jpg.temp', oneDict + '.jpg')
                 ##else:
-                os.system('copy ' + oneDict + '.txt ' + oneDict + '.txt.temp')
-                os.system('copy ' + oneDict + '.jpg ' + oneDict + '.jpg.temp')
-                self.uploadTXT(oneDict + '.txt.temp')
-                self.uploadBIN(oneDict + '.jpg.temp')
-                self.rename(oneDict + '.txt.temp', oneDict + '.txt')
-                self.rename(oneDict + '.jpg.temp', oneDict + '.jpg')
+                os.system('copy ' + oneDict + '.txt ' + '~' + oneDict + '.txt')
+                os.system('copy ' + oneDict + '.jpg ' + '~' + oneDict + '.jpg')
+                self.uploadTXT('~' + oneDict + '.txt')
+                self.uploadBIN('~' + oneDict + '.jpg')
+                self.rename('~' + oneDict + '.txt', oneDict + '.txt')
+                self.rename('~' + oneDict + '.jpg', oneDict + '.jpg')
             else:
                 print "local path %s does not exist" %oneDict
                 logFile.write("local path %s does not exist\n" %oneDict)
@@ -225,9 +231,11 @@ def test_largefile():
     
     
 if __name__ == '__main__':
+    version = 'v0.0.1b3'
     try:
         logFile = open('ftpclient.log','w')
     except IOError,e:
         print 'error, can not create log file:', e
     else:
+        logFile.write('version = %s\n' %version)
         main()
