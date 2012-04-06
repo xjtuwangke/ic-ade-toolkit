@@ -43,6 +43,7 @@ class WKFTPConnection(object):
             return
         else:
             print 'cannot change PWD, not logged in'
+            logFile.write('cannot change PWD, not logged in\n')
             return
 
     def uploadTXT(self,fileName):
@@ -51,11 +52,11 @@ class WKFTPConnection(object):
                 file_handler = open(fileName,'r')
             except IOError,e:
                 print 'Error: file open error', e
-                logFile.write('Error: file open error')
+                logFile.write('Error: txt file %s open error\n' %fileName)
             else:
-                if fileName in self.ftp.nlst():
-                    logFile.write('%s is uploading, skipped in uploadTXT()\n' %fileName)
-                else:
+                ##if fileName in self.ftp.nlst():
+                    ##logFile.write('%s is uploading, skipped in uploadTXT()\n' %fileName)
+                ##else:
                     try:
                         self.ftp.storlines('STOR %s' %fileName,file_handler)
                         file_handler.close()
@@ -68,19 +69,20 @@ class WKFTPConnection(object):
                         return
         else:
             print 'cannot upload file , not logged in'
+            logFile.write('cannot upload file , not logged in\n')
 
     def uploadBIN(self, fileName):
-        bufSize = 2048
+        bufSize = 32768
         if self.connected == True:
             try:
                 file_handler = open(fileName,'rb')
             except IOError,e:
                 print 'Error: file open error', e
-                logFile.write('Error: file open error')
+                logFile.write('Error: BIN file %s open error\n' %fileName)
             else:
-                if fileName in self.ftp.nlst():
-                    logFile.write('%s is uploading, skipped in uploadBIN()\n' %fileName)
-                else:
+                ##if fileName in self.ftp.nlst():
+                    ##logFile.write('%s is uploading, skipped in uploadBIN()\n' %fileName)
+                ##else:
                     try:
                         self.ftp.storbinary('STOR %s' %fileName,file_handler,bufSize)
                         file_handler.close()
@@ -137,7 +139,6 @@ class WKExpFTP(WKFTPConnection):
             self.changePWD(oneDict)
             if os.path.exists(oneDict):
                 os.chdir(oneDict)
-                print 'now in os.chdir()'
                 ##if (oneDict + '.txt.temp' in self.ftp.nlst()) or (oneDict + '.jpg.temp' in self.ftp.nlst()):
                 ##    logFile.write('%s still uploading, skip\n' %oneDict)
                 ##self.rename(oneDict + '.txt.temp', oneDict + '.txt')
@@ -201,8 +202,9 @@ def main():
     newFTP.init()
     
     while(True):
-        time.sleep(10)
         newFTP.timerHandler()
+        time.sleep(10)
+        
 
     
     #newFTP.changePWD('exp1')
@@ -211,7 +213,15 @@ def main():
     #newFTP.uploadBIN('1.jpg')
     #newFTP.logout()
     
-    
+def test_largefile():
+    HOST = 'informore.meibu.com'
+    DIRN = 'test'
+    LoginNAME = 'test'
+    LoginPWD  = 'test'
+    newFTP = WKFTPConnection(HOST,LoginNAME,LoginPWD)
+    newFTP.connect()
+    newFTP.uploadBIN('test.rmvb')
+    newFTP.rename('test.rmvb','test2.rmvb')
     
     
 if __name__ == '__main__':
