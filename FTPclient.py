@@ -167,6 +167,8 @@ class WKExpFTP(WKFTPConnection):
             self.updateDialog()
 
     def timerHandler(self):
+        self.logout()
+        self.connect()
         thisDialog = []
         ##if os.path.exists('Dialog.txt.temp'):
         ##    logFile.write('Dialog.txt is still uploading, skip\n')
@@ -234,7 +236,7 @@ def test_largefile():
     
     
 if __name__ == '__main__':
-    version = 'v0.0.1b4'
+    version = 'v0.0.1b5'
     try:
         logFile = open('ftpclient.log','w')
     except IOError,e:
