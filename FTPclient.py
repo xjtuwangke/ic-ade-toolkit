@@ -150,12 +150,15 @@ class WKExpFTP(WKFTPConnection):
                 ##self.rename(oneDict + '.txt.temp', oneDict + '.txt')
                 ##self.rename(oneDict + '.jpg.temp', oneDict + '.jpg')
                 ##else:
-                os.system('copy ' + oneDict + '.txt ' + '~' + oneDict + '.txt')
-                os.system('copy ' + oneDict + '.jpg ' + '~' + oneDict + '.jpg')
-                self.uploadTXT('~' + oneDict + '.txt')
-                self.uploadBIN('~' + oneDict + '.jpg')
-                self.rename('~' + oneDict + '.txt', oneDict + '.txt')
-                self.rename('~' + oneDict + '.jpg', oneDict + '.jpg')
+                timeStamp = str(os.stat(oneDict + '.txt').st_mtime)
+                txtName = oneDict + '.txt'
+                jpgName = oneDict + '.jpg'
+                os.system('copy ' + txtName + ' ' + '~' + txtName + timeStamp)
+                os.system('copy ' + jpgName + ' ' + '~' + jpgName + timeStamp)
+                self.uploadTXT('~' + txtName + timeStamp)
+                self.uploadBIN('~' + jpgName + timeStamp)
+                self.rename('~' + txtName + timeStamp, txtName)
+                self.rename('~' + jpgName + timeStamp, jpgName)
             else:
                 print "local path %s does not exist" %oneDict
                 logFile.write("local path %s does not exist\n" %oneDict)
@@ -165,15 +168,15 @@ class WKExpFTP(WKFTPConnection):
 
     def timerHandler(self):
         thisDialog = []
-        if os.path.exists('Dialog.txt.temp'):
-            logFile.write('Dialog.txt is still uploading, skip\n')
-        else:
-            os.system('copy Dialog.txt Dialog.txt.temp')
+        ##if os.path.exists('Dialog.txt.temp'):
+        ##    logFile.write('Dialog.txt is still uploading, skip\n')
+        ##else:
+        ##    os.system('copy Dialog.txt Dialog.txt.temp')
         try:
             fobj = open('Dialog.txt','r')
         except IOError,e:
-            print 'Dialog.txt.temp file open error', e
-            logFile.write('Dialog.txt.temp file open error\n')
+            print 'Dialog.txt file open error', e
+            logFile.write('Dialog.txt file open error\n')
         else:
             for i,eachLine in enumerate(fobj):
                 temp = eachLine.split('\n')
@@ -231,7 +234,7 @@ def test_largefile():
     
     
 if __name__ == '__main__':
-    version = 'v0.0.1b3'
+    version = 'v0.0.1b4'
     try:
         logFile = open('ftpclient.log','w')
     except IOError,e:
