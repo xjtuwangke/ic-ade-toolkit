@@ -15,11 +15,11 @@ def WKOpenFile(filename,mode):
 def readSDC(sdcFileName, checkoutFileName):
     sdcFile = WKOpenFile(sdcFileName,'r')
     searchResultsDict = {}
-    regxPattern = r'create_clock\s+\[get_pins\s+([\w\d\/]+)\]'
+    regxPattern = r'(?:create_clock|create_generated_clock)\s+\[get_pins\s+([\w\d\/]+)\]'
     #regu Pattern for lines like:create_clock [get_pins chipmain/chipfun/clkgen_dig/clko_peri] ....
     for line, eachLine in enumerate(sdcFile):
         eachLine = eachLine.split('#')[0]                           #ignore chars after '#'
-        temp = re.findall(r'create_clock\s+\[get_pins\s+([\w\d\/]+)\]',eachLine)
+        temp = re.findall(regxPattern, eachLine)
         if temp != []:
             searchResultsDict[line] = temp
     
@@ -146,11 +146,11 @@ def main(sdcFileName, verilogFileName):
 
 
 if __name__ == '__main__' :
-    version = 'v0.0.1'
+    version = 'v0.0.1c'
     print '*********************'
     print '**clkchg ver:%s' %version
     print '**Author:Wangke******'
-    print '**Date:2012/04/03****'
+    print '**Date:2012/05/29****'
     print '*********************'
     if len(sys.argv) > 2:
         main(sys.argv[1],sys.argv[2])
