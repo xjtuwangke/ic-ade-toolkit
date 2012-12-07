@@ -1,0 +1,122 @@
+import os,re,math
+
+def createPolyLine(point_array,polyLineName):
+    result = '\noEditor.CreatePolyline _'
+    result+= '\nArray("NAME:PolylineParameters", "IsPolylineCovered:=", true, "IsPolylineClosed:=",  false, _'
+    
+    
+    
+    PLPoint = ""
+    PLSegment = ""
+    
+    
+    
+    PLPoint_tpl   = "\nArray(\"NAME:PLPoint\", \"X:=\", \"%s\", \"Y:=\", \"%s\", \"Z:=\", \"%s\"),_"
+    PLSegment_tpl = "\nArray(\"NAME:PLSegment\", \"SegmentType:=\", \"Line\", \"StartIndex:=\", %s, \"NoOfPoints:=\", 2),_"
+    
+    for i,point in enumerate(point_array):
+        PLPoint += PLPoint_tpl %(str(point[0])+unit,str(point[1])+unit,str(point[2])+unit)
+        if i<len(point_array)-1:
+            PLSegment += PLSegment_tpl %(str(i))
+    
+    if len(PLPoint)>0:
+        PLPoint = PLPoint[:-2]
+    if len(PLSegment)>0:
+        PLSegment = PLSegment[:-2]                                                             
+    
+    
+    result+= "\nArray(\"NAME:PolylinePoints\", _"
+    result+= PLPoint
+    result+= "),_"
+    result+="\nArray(\"NAME:PolylineSegments\", _"
+    result+= PLSegment
+    result+= '),_'
+    
+    result+="\nArray(\"NAME:PolylineXSection\", \"XSectionType:=\", \"None\", \"XSectionOrient:=\", \"Auto\", \"XSectionWidth:=\", \"0mm\", \"XSectionTopWidth:=\", \"0mm\", \"XSectionHeight:=\", \"0mm\", \"XSectionNumSegments:=\", \"0\", \"XSectionBendType:=\", \"Corner\")),_"
+    result+="\nArray(\"NAME:Attributes\", \"Name:=\", \"%s\", \"Flags:=\", \"\", \"Color:=\", \"(132 132 193)\", \"Transparency:=\", 0, \"PartCoordinateSystem:=\", \"Global\", \"UDMId:=\", \"\", \"MaterialValue:=\", \"\" & Chr(34) & \"vacuum\" & Chr(34) & \"\", \"SolveInside:=\", true)" %(polyLineName)
+    return result
+
+
+def create_octagon(D):
+    half_D = 0.5*D
+    half_L = half_D*math.tan(25.5/180*math.pi)
+    point_array =      [[half_D,half_L,0]]
+    point_array.append([half_L,half_D,0])
+    point_array.append([-1*half_L,half_D,0])
+    point_array.append([-1*half_D,half_L,0])
+    point_array.append([-1*half_D,-1*half_L,0])
+    point_array.append([-1*half_L,-1*half_D,0])
+    point_array.append([half_L,-1*half_D,0])
+    point_array.append([half_D,-1*half_L,0])
+    return point_array
+
+def create_ind_std(D,W,S,N):
+    point_array = [[0.5*D-0.5*W-0.5*S,0,0]]
+    for i in range(0,N):
+         this_D = D + (2*i+1)*W + 2*i*S
+         point_array.append([0.5*this_D,0.5*S+W,0])
+         point_array = point_array + create_octagon(this_D)
+         point_array.append([0.5*this_D,-0.5*S,0])
+    return point_array
+
+
+
+
+##Design Variables
+D = 40
+S = 2
+W = 3
+N = 5
+Height_metal =2
+unit = 'um'
+
+##Calculations
+
+
+
+
+point_array = create_ind_std(D,W,S,N)
+
+project = "Project19"
+design  = "HFSSDesign1"
+csname = "RelativeCS1"
+polyLineName = "PolyLine1"
+
+
+set_unit_tpl = "\noEditor.SetModelUnits Array(\"NAME:Units Parameter\", \"Units:=\", \"%s\", \"Rescale:=\",  false)"
+
+cs45_tpl ="\noEditor.CreateRelativeCS _"
+cs45_tpl+="\nArray(\"NAME:RelativeCSParameters\", \"OriginX:=\", \"0um\", \"OriginY:=\",  \"0um\", \"OriginZ:=\", \"0um\", \"XAxisXvec:=\", \"1um\", \"XAxisYvec:=\", \"1um\", \"XAxisZvec:=\",  \"0um\", \"YAxisXvec:=\", \"-1um\", \"YAxisYvec:=\", \"1um\", \"YAxisZvec:=\", \"0um\"),_"
+cs45_tpl+="\nArray(\"NAME:Attributes\", \"Name:=\",  \"%s\")"
+
+change_cs_tpl = "\noEditor.SetWCS Array(\"NAME:SetWCS Parameter\", \"Working Coordinate System:=\",  \"%s\")"
+
+
+
+result = 'Dim oAnsoftApp                                                     '
+result+= '\nDim oDesktop                                                     '
+result+= '\nDim oProject                                                     '
+result+= '\nDim oDesign                                                      '
+result+= '\nDim oEditor                                                      '
+result+= '\nDim oModule                                                      '
+result+= '\nSet oAnsoftApp = CreateObject(\"AnsoftHfss.HfssScriptInterface\")  '
+result+= '\nSet oDesktop = oAnsoftApp.GetAppDesktop()                        '
+result+= '\noDesktop.RestoreWindow                                           '
+result+= '\nSet oProject = oDesktop.SetActiveProject(\"%s\")      ' %(project)
+result+= '\nSet oDesign = oProject.SetActiveDesign(\"%s\")            ' %(design)
+result+= '\nSet oEditor = oDesign.SetActiveEditor(\"3D Modeler\")              '
+
+result+= set_unit_tpl %(unit)
+#result+= cs45_tpl %(csname)
+#result+= change_cs_tpl %(csname)
+  
+
+result+= createPolyLine(point_array,polyLineName)
+
+result+="\noEditor.ChangeProperty Array(\"NAME:AllTabs\", Array(\"NAME:Geometry3DCmdTab\", Array(\"NAME:PropServers\",  \"%s:CreatePolyline:1\"), Array(\"NAME:ChangedProps\", Array(\"NAME:Width/Diameter\", \"Value:=\",  \"%s\"), Array(\"NAME:Height\", \"Value:=\", \"%s\"))))" %(polyLineName, str(W)+unit , str(Height_metal)+unit)
+result+="\noEditor.ChangeProperty Array(\"NAME:AllTabs\", Array(\"NAME:Geometry3DCmdTab\", Array(\"NAME:PropServers\", \"PolyLine1:CreatePolyline:1\"), Array(\"NAME:ChangedProps\", Array(\"NAME:Type\", \"Value:=\", \"Rectangle\"))))"
+
+fobj = open('f:/temp.vbs','w')
+fobj.write(result)
+fobj.close()
+
