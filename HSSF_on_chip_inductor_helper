@@ -37,26 +37,26 @@ def createPolyLine(point_array,polyLineName):
     return result
 
 
-def create_octagon(D):
+def create_octagon(D,Z):
     half_D = 0.5*D
     half_L = half_D*math.tan(25.5/180*math.pi)
-    point_array =      [[half_D,half_L,0]]
-    point_array.append([half_L,half_D,0])
-    point_array.append([-1*half_L,half_D,0])
-    point_array.append([-1*half_D,half_L,0])
-    point_array.append([-1*half_D,-1*half_L,0])
-    point_array.append([-1*half_L,-1*half_D,0])
-    point_array.append([half_L,-1*half_D,0])
-    point_array.append([half_D,-1*half_L,0])
+    point_array =      [[half_D,half_L,Z]]
+    point_array.append([half_L,half_D,Z])
+    point_array.append([-1*half_L,half_D,Z])
+    point_array.append([-1*half_D,half_L,Z])
+    point_array.append([-1*half_D,-1*half_L,Z])
+    point_array.append([-1*half_L,-1*half_D,Z])
+    point_array.append([half_L,-1*half_D,Z])
+    point_array.append([half_D,-1*half_L,Z])
     return point_array
 
-def create_ind_std(D,W,S,N):
-    point_array = [[0.5*D-0.5*W-0.5*S,0,0]]
+def create_ind_std(D,W,S,N,Z):
+    point_array = [[0.5*D-0.5*W-0.5*S,0,Z]]
     for i in range(0,N):
          this_D = D + (2*i+1)*W + 2*i*S
-         point_array.append([0.5*this_D,0.5*S+W,0])
-         point_array = point_array + create_octagon(this_D)
-         point_array.append([0.5*this_D,-0.5*S,0])
+         point_array.append([0.5*this_D,0.5*S+W,Z])
+         point_array = point_array + create_octagon(this_D,Z)
+         point_array.append([0.5*this_D,-0.5*S,Z])
     return point_array
 
 
@@ -67,6 +67,7 @@ D = 40
 S = 2
 W = 3
 N = 5
+Z = 0
 Height_metal =2
 unit = 'um'
 
@@ -75,7 +76,7 @@ unit = 'um'
 
 
 
-point_array = create_ind_std(D,W,S,N)
+point_array = create_ind_std(D,W,S,N,Z)
 
 project = "Project19"
 design  = "HFSSDesign1"
